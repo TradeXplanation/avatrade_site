@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="TradeXplanation × AvaTrade — системная торговая архитектура и профессиональная инфраструктура.">
+<title>TradeXplanation × AvaTrade — Private Trading Architecture</title>
+
+<!-- Подключение премиального шрифта -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+<style>
+:root {
+    /* Глубокий темно-синий */
+    --bg: #030510; 
+    
+    /* Стеклянные панели (Glassmorphism) */
+    --panel: rgba(10, 15, 28, 0.45); 
+    --panel2: rgba(15, 22, 40, 0.75);
+    
+    /* Линии контраста */
+    --line: rgba(255, 255, 255, 0.08);
+    --line2: rgba(255, 255, 255, 0.15);
+    --card-top-light: rgba(33, 202, 238, 0.4); 
+    
+    /* Акценты */
+    --accent: #00a9d6;
+    --accent2: #21caee;
+    --text: #c5d0d9;
+    --muted: #8c9eac;
+    
+    /* Свечение */
+    --shadow: 0 28px 80px rgba(0, 0, 0, 0.9);
+    --glow: 0 15px 45px rgba(0, 169, 214, 0.35), 0 0 25px rgba(0, 169, 214, 0.5);
+    
+    --radius: 16px;
+}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+
+body{
+    margin:0;
+    color:var(--text);
+    background-color: var(--bg);
+    /* Инженерная сетка на фоне */
+    background-image: 
+        linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    background-size: 60px 60px;
+    background-attachment: fixed;
+    font-family: 'Manrope', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+    overflow-x: hidden;
+}
+
+a{color:inherit; text-decoration:none}
+
+.page{
+    width:min(1180px,calc(100% - 36px));
+    margin:0 auto;
+    position: relative;
+    z-index: 5;
+}
+
+/* =========================
+   АМБИЕНТНЫЙ ФОН (ПУЛЬСИРУЮЩИЕ СФЕРЫ)
+========================= */
+.ambient-canvas {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 1;
+    pointer-events: none;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-30px) scale(1.05); }
+}
+
+.ambient-glow-1 {
+    position: absolute;
+    width: 900px;
+    height: 900px;
+    background: radial-gradient(circle, rgba(0, 169, 214, 0.12) 0%, transparent 60%);
+    top: -200px;
+    right: -200px;
+    border-radius: 50%;
+    animation: float 14s ease-in-out infinite;
+}
+
+.ambient-glow-2 {
+    position: absolute;
+    width: 800px;
+    height: 800px;
+    background: radial-gradient(circle, rgba(33, 202, 238, 0.09) 0%, transparent 60%);
+    bottom: -100px;
+    left: -200px;
+    border-radius: 50%;
+    animation: float 18s ease-in-out infinite reverse;
+}
+
+/* =========================
+   SCROLL REVEAL (АНИМАЦИЯ ПОЯВЛЕНИЯ)
+========================= */
+.fade-up {
+    opacity: 0;
+    transform: translateY(50px);
+    transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1), transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.fade-up.is-revealed {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* =========================
+   ТИПОГРАФИКА И СВЕЧЕНИЕ
+========================= */
+.stat-value, .experience-number, #countdown {
+    background: linear-gradient(135deg, #ffffff 0%, var(--accent2) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 40px rgba(33, 202, 238, 0.5);
+    font-weight: 900;
+}
+
+h1, .section-title {
+    color: #ffffff;
+    text-shadow: 0 0 25px rgba(0, 169, 214, 0.5);
+    font-weight: 800;
+}
+
+h2 {
+    color: #f6f9fb;
+    font-weight: 700;
+}
+
+h3 {
+    color: #e2e8f0;
+}
+
+/* =========================
+   СТЕКЛЯННЫЕ КАРТОЧКИ (GLASSMORPHISM)
+========================= */
+.stat, .card, .client-profile, .client-process, .closing, .experience {
+    background: linear-gradient(145deg, var(--panel), var(--panel2));
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--line);
+    border-top: 1px solid var(--card-top-light);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+}
+
+/* Возвращаем быстрый transition для ховера только после появления элемента */
+.fade-up.is-revealed.hover-target {
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease, border-color 0.4s ease, background 0.4s ease;
+}
+
+.hover-target:hover {
+    transform: translateY(-8px);
+    border-color: rgba(33, 202, 238, 0.7);
+    box-shadow: var(--glow);
+    background: linear-gradient(145deg, rgba(15, 22, 40, 0.85), rgba(5, 8, 15, 0.95));
+}
+
+.block-nav a {
+    background: rgba(6, 9, 20, 0.6);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--line);
+    border-top: 1px solid var(--card-top-light);
+    transition: all 0.4s ease;
+}
+
+.block-nav a:hover {
+    border-color: var(--accent2);
+    box-shadow: var(--glow);
+    background: rgba(3, 6, 15, 0.9);
+    transform: translateY(-4px);
+}
+
+/* =========================
+   ПУЛЬСИРУЮЩАЯ КНОПКА
+========================= */
+@keyframes pulse-btn {
+    0% { box-shadow: 0 0 15px rgba(33, 202, 238, 0.4), 0 0 0 0 rgba(33, 202, 238, 0.4); }
+    70% { box-shadow: 0 0 25px rgba(33, 202, 238, 0.7), 0 0 0 20px rgba(33, 202, 238, 0); }
+    100% { box-shadow: 0 0 15px rgba(33, 202, 238, 0.4), 0 0 0 0 rgba(33, 202, 238, 0); }
+}
+
+.cta-button {
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-height:61px;
+    padding:0 35px;
+    border-radius:8px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    color: #000000;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    font-size:13px;
+    font-weight:900;
+    animation: pulse-btn 2.5s infinite;
+    transition: all 0.3s ease;
+}
+
+.cta-button:hover {
+    background: #ffffff;
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 10px 40px rgba(33, 202, 238, 0.8);
+    animation: none;
+}
+
+/* =========================
+   HERO БЛОК
+========================= */
+.hero{
+    min-height:780px;
+    position:relative;
+    display:flex;
+    align-items:flex-end;
+    overflow:hidden;
+    margin-bottom:105px;
+    border-bottom:1px solid var(--line);
+}
+
+.hero-bg{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    object-position:center;
+    filter:saturate(0.9) contrast(1.15) brightness(0.95); 
+}
+
+.hero::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:
+        linear-gradient(90deg, rgba(3,5,16,0.95) 0%, rgba(3,5,16,0.6) 50%, rgba(3,5,16,0.1) 100%),
+        linear-gradient(0deg, rgba(3,5,16,1) 0%, rgba(3,5,16,0) 45%);
+}
+
+.hero-content{
+    position:relative;
+    z-index:2;
+    width:100%;
+    padding:70px 0 92px;
+}
+
+.ava-logo{
+    width:205px;
+    max-width:62vw;
+    height:auto;
+    display:block;
+    margin-bottom:48px;
+}
+
+.eyebrow{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    color:var(--accent2);
+    text-transform:uppercase;
+    letter-spacing:.18em;
+    font-size:11px;
+    font-weight:800;
+    margin-bottom:18px;
+}
+
+.eyebrow:before{
+    content:"";
+    width:35px;
+    height:1px;
+    background:var(--accent);
+}
+
+.hero h1{
+    max-width:920px;
+    margin:0;
+    font-size:clamp(45px,7.2vw,84px);
+    line-height:.97;
+    letter-spacing:-.03em;
+}
+
+.hero-subtitle{
+    max-width:690px;
+    margin:28px 0 0;
+    color:#e2e8f0;
+    font-size:18px;
+}
+
+.hero-partner{
+    color:var(--accent2);
+    margin-top:26px;
+    font-size:11px;
+    font-weight:800;
+    text-transform:uppercase;
+    letter-spacing:.13em;
+}
+
+/* =========================
+   НАВИГАЦИЯ
+========================= */
+.block-nav{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:10px;
+    margin:-35px 0 110px;
+    position:relative;
+    z-index:5;
+}
+
+.block-nav a{
+    padding:22px 24px;
+}
+
+.block-nav span{
+    display:block;
+    color:var(--accent);
+    font-size:10px;
+    font-weight:800;
+    letter-spacing:.15em;
+    margin-bottom:6px;
+}
+
+.block-nav strong{
+    font-size:15px;
+    font-weight:700;
+    color: #ffffff;
+}
+
+/* =========================
+   БАЗОВЫЕ СТИЛИ БЛОКОВ
+========================= */
+section{margin-bottom:110px}
+
+.section-number{
+    color:var(--accent);
+    text-transform:uppercase;
+    letter-spacing:.17em;
+    font-size:11px;
+    font-weight:800;
+    margin-bottom:11px;
+}
+
+.section-title{
+    margin:0 0 20px;
+    font-size:clamp(31px,4vw,49px);
+    line-height:1.04;
+    letter-spacing:-.03em;
+}
+
+.section-lead{
+    max-width:820px;
+    font-size:16px;
+    margin:0;
+}
+
+/* =========================
+   БЛОК 1 — AVATRADE
+========================= */
+.block-header{
+    display:grid;
+    grid-template-columns:.8fr 1.6fr;
+    gap:70px;
+    margin-bottom:38px;
+    align-items:start;
+}
+
+.block-tag{
+    color:var(--accent2);
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:.15em;
+    font-weight:800;
+}
+
+.stats{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:12px;
+    margin:30px 0 16px;
+}
+
+.stat{
+    min-height:135px;
+    padding:24px;
+    border-radius:16px;
+}
+
+.stat-value{
+    font-size:35px;
+    line-height:1;
+    letter-spacing:-.04em;
+    margin-bottom:13px;
+}
+
+.stat-label{
+    color:var(--muted);
+    font-size:12px;
+    line-height:1.45;
+}
+
+.cards{
+    display:grid;
+    gap:15px;
+}
+
+.cards-3{ grid-template-columns:repeat(3,minmax(0,1fr)); }
+.cards-2{ grid-template-columns:repeat(2,minmax(0,1fr)); }
+
+.card{
+    position:relative;
+    min-height:210px;
+    padding:30px;
+    border-radius:var(--radius);
+    overflow:hidden;
+}
+
+.card:before{
+    content:"";
+    position:absolute;
+    width:120px;
+    height:120px;
+    right:-70px;
+    top:-70px;
+    border-radius:50%;
+    background:rgba(33,202,238,.15);
+    filter: blur(20px);
+}
+
+.card-index{
+    color:var(--accent2);
+    font-size:10px;
+    font-weight:800;
+    letter-spacing:.16em;
+    margin-bottom:24px;
+}
+
+.card h3{
+    margin:0 0 11px;
+    font-size:20px;
+    line-height:1.2;
+    letter-spacing:-.01em;
+}
+
+.card p{
+    margin:0;
+    font-size:14px;
+}
+
+.video-wrap{
+    position:relative;
+    width:100%;
+    padding-top:56.25%;
+    overflow:hidden;
+    background:#000000;
+    border:1px solid var(--card-top-light);
+    box-shadow:var(--shadow);
+    margin-top:35px;
+    border-radius:12px;
+}
+
+.video-wrap iframe{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    border:0;
+}
+
+/* =========================
+   БЛОК 2 — TRADEXPLANATION
+========================= */
+.experience{
+    display:grid;
+    grid-template-columns:1fr 2fr;
+    gap:50px;
+    align-items:center;
+    padding:43px 48px;
+    margin-top:35px;
+    border-radius: var(--radius);
+}
+
+.experience-number{
+    font-size:clamp(55px,8vw,90px);
+    line-height:1;
+    letter-spacing:-.05em;
+}
+
+.experience-label{
+    margin-top:13px;
+    color:var(--muted);
+    text-transform:uppercase;
+    letter-spacing:.09em;
+    font-size:12px;
+    font-weight: 600;
+}
+
+.experience-copy{
+    color:#e2e8f0;
+    font-size:17px;
+}
+
+.architecture{ margin-top:35px; }
+.architecture .card{ min-height:230px; }
+
+.bullet-line{
+    display:flex;
+    align-items:flex-start;
+    gap:12px;
+    font-size:14px;
+    margin-top:15px;
+}
+
+.bullet-line:before{
+    content:"";
+    width:6px;
+    height:6px;
+    flex:none;
+    margin-top:9px;
+    border-radius:50%;
+    background:var(--accent2);
+    box-shadow: 0 0 10px var(--accent2);
+}
+
+/* =========================
+   БЛОК 3 — CLIENT
+========================= */
+.client{
+    display:grid;
+    grid-template-columns:.85fr 1.15fr;
+    gap:15px;
+    margin-top:35px;
+}
+
+.client-profile, .client-process{
+    padding:35px;
+    border-radius:var(--radius);
+}
+
+.client-label{
+    color:var(--accent);
+    font-size:10px;
+    text-transform:uppercase;
+    letter-spacing:.16em;
+    font-weight:800;
+    margin-bottom:20px;
+}
+
+.client-profile h3, .client-process h3{
+    margin:0 0 13px;
+    font-size:27px;
+    line-height:1.1;
+    letter-spacing:-.02em;
+}
+
+.client-profile p, .client-process p{
+    font-size:14px;
+    margin:0;
+}
+
+.process-row{
+    display:grid;
+    grid-template-columns:47px 1fr;
+    gap:15px;
+    padding:17px 0;
+    border-top:1px solid var(--line);
+}
+.process-row:first-of-type{ border-top:0; padding-top:0; }
+
+.process-number{
+    color:var(--accent2);
+    font-size:11px;
+    font-weight:900;
+    letter-spacing:.13em;
+}
+
+/* =========================
+   ФИЛЬТР
+========================= */
+.filter{
+    border-top:1px solid var(--line);
+    margin-top:35px;
+}
+
+.filter-item{
+    display:grid;
+    grid-template-columns:70px 250px 1fr;
+    align-items:center;
+    gap:22px;
+    padding:27px 0;
+    border-bottom:1px solid var(--line);
+}
+
+.filter-index{
+    color:var(--accent2);
+    font-size:11px;
+    font-weight:900;
+    letter-spacing:.13em;
+}
+
+.filter-title{
+    font-weight:700;
+    font-size:16px;
+    color: #ffffff;
+}
+
+.filter-description{ font-size:14px; }
+
+/* =========================
+   ЗАКРЫТИЕ (CTA)
+========================= */
+.closing{
+    position:relative;
+    overflow:hidden;
+    padding:65px 45px;
+    text-align:center;
+    border-radius: var(--radius);
+}
+
+.status{
+    color:var(--accent2);
+    font-size:10px;
+    font-weight:800;
+    letter-spacing:.18em;
+    margin-bottom:15px;
+}
+
+#countdown{
+    font-variant-numeric:tabular-nums;
+    font-size:clamp(42px,7vw,70px);
+    line-height:1.05;
+    letter-spacing:.035em;
+    margin-bottom:28px;
+}
+
+.closing h2{
+    max-width:780px;
+    margin:0 auto 14px;
+    font-size:clamp(30px,4vw,48px);
+    line-height:1.04;
+    letter-spacing:-.03em;
+}
+
+.closing-copy{
+    max-width:650px;
+    margin:0 auto 30px;
+    font-size:15px;
+}
+
+.cta-note{
+    max-width:720px;
+    margin:16px auto 0;
+    color:var(--muted2);
+    font-size:10px;
+}
+
+/* =========================
+   ФУТЕР
+========================= */
+footer{
+    padding:33px 0 52px;
+    border-top:1px solid var(--line);
+    text-align:center;
+    color:var(--muted2);
+    font-size:10px;
+    line-height:1.75;
+}
+
+/* АДАПТИВНОСТЬ */
+@media(max-width:900px){
+    .stats{grid-template-columns:repeat(2,1fr)}
+    .cards-3{grid-template-columns:repeat(2,1fr)}
+    .block-header, .experience, .client{grid-template-columns:1fr}
+    .filter-item{grid-template-columns:55px 220px 1fr}
+}
+
+@media(max-width:650px){
+    .page{width:min(100% - 24px,1180px)}
+    .hero{min-height:690px; margin-bottom:76px;}
+    .hero-content{padding-bottom:60px}
+    .ava-logo{width:170px;margin-bottom:42px}
+    .block-nav{grid-template-columns:1fr; margin:-30px 0 76px;}
+    section{margin-bottom:76px}
+    .block-header, .experience{gap:25px;}
+    .stats, .cards-3, .cards-2{grid-template-columns:1fr;}
+    .stat{min-height:auto}
+    .card{min-height:auto;padding:25px}
+    .experience{padding:32px 25px;}
+    .client-profile, .client-process{padding:27px 24px;}
+    .filter-item{grid-template-columns:43px 1fr; gap:9px 15px; padding:22px 0;}
+    .filter-description{grid-column:2}
+    .closing{padding:48px 20px}
+    .cta-button{width:100%; padding:0 12px; font-size:11px;}
+}
+</style>
+</head>
+<body>
+
+<!-- АМБИЕНТНЫЙ ФОН -->
+<div class="ambient-canvas">
+    <div class="ambient-glow-1"></div>
+    <div class="ambient-glow-2"></div>
+</div>
+
+<div class="page">
+
+    <!-- HERO -->
+    <header class="hero">
+        <img
+            class="hero-bg"
+            src="https://scontent.fkiv9-1.fna.fbcdn.net/v/t39.30808-6/492392314_1213444600788414_1037919020761149739_n.jpg?stp=dst-jpg_tt6&cstp=mx1080x1080&ctp=s1080x1080&_nc_cat=109&ccb=1-7&_nc_sid=127cfc&_nc_ohc=UYmeGVq0YKoQ7kNvwGAjeLK&_nc_oc=Adp6sPSXsyqCWsX1rjn1Lrtt_gKGxpbLrBC0m_1iGnU_M6vgDh0ojX6m37jUx8C84XQ&_nc_zt=23&_nc_ht=scontent.fkiv9-1.fna&_nc_gid=61G4ty36LZSg50BdQRW-xQ&_nc_ss=7b2a8&oh=00_AQEHdd8vjb_-yNs7PNpyXh53e93nEygpQqmwCOtqR73imw&oe=6A8361AD"
+            alt="TradeXplanation Hero"
+        >
+        <div class="hero-content">
+            <div class="eyebrow">TradeXplanation / Private Access</div>
+            <h1>Инфраструктура, в которой контроль становится системой.</h1>
+            <p class="hero-subtitle">
+                Связка глобального брокера AvaTrade, аналитической архитектуры
+                TradeXplanation и дисциплинированного клиентского процесса.
+            </p>
+            <div class="hero-partner">Официальный партнер Oracle Red Bull Racing Team</div>
+        </div>
+    </header>
+
+    <nav class="block-nav fade-up" aria-label="Навигация по архитектуре">
+        <a href="#avatrade">
+            <span>01 / INFRASTRUCTURE</span>
+            <strong>AvaTrade</strong>
+        </a>
+        <a href="#tradexplanation">
+            <span>02 / ARCHITECTURE</span>
+            <strong>TradeXplanation</strong>
+        </a>
+        <a href="#client">
+            <span>03 / EXECUTION</span>
+            <strong>Клиент + система</strong>
+        </a>
+    </nav>
+
+    <section id="avatrade">
+        <div class="block-header fade-up">
+            <div>
+                <div class="section-number">Block 01 / AvaTrade</div>
+                <div class="block-tag">Global Trading Infrastructure</div>
+                <h2 class="section-title">20+ лет безупречного исполнения.</h2>
+            </div>
+            <p class="section-lead">
+                Институциональный стандарт работы. AvaTrade предоставляет мощную торговую инфраструктуру для клиентов по всему миру, обеспечивая бескомпромиссную ликвидность, скорость ордеров и абсолютную защиту капитала.
+            </p>
+        </div>
+
+        <div class="stats">
+            <div class="stat hover-target fade-up">
+                <div class="stat-value">20+</div>
+                <div class="stat-label">лет системной работы</div>
+            </div>
+            <div class="stat hover-target fade-up" style="transition-delay: 0.1s;">
+                <div class="stat-value">9</div>
+                <div class="stat-label">юрисдикций жесткого регулирования</div>
+            </div>
+            <div class="stat hover-target fade-up" style="transition-delay: 0.2s;">
+                <div class="stat-value">1 250+</div>
+                <div class="stat-label">торговых активов для диверсификации</div>
+            </div>
+            <div class="stat hover-target fade-up" style="transition-delay: 0.3s;">
+                <div class="stat-value">F1</div>
+                <div class="stat-label">официальный партнер Red Bull Racing</div>
+            </div>
+        </div>
+
+        <div class="cards cards-3">
+            <article class="card hover-target fade-up">
+                <div class="card-index">01 / REGULATION</div>
+                <h3>Абсолютная надежность</h3>
+                <p>Жесткий контроль регуляторов на 5 континентах. Ваши средства отделены от операционного капитала брокера и хранятся на сегрегированных счетах.</p>
+            </article>
+            <article class="card hover-target fade-up" style="transition-delay: 0.1s;">
+                <div class="card-index">02 / AVAPROTECT</div>
+                <h3>Управление убытками</h3>
+                <p>Уникальная система AvaProtect™ позволяет застраховать конкретную сделку от убытка на выбранный период. Риски жестко лимитированы технически.</p>
+            </article>
+            <article class="card hover-target fade-up" style="transition-delay: 0.2s;">
+                <div class="card-index">03 / EXECUTION</div>
+                <h3>Скорость без компромиссов</h3>
+                <p>Мгновенное рыночное исполнение ордеров без проскальзываний. Инфраструктура выдерживает нагрузки любой волатильности.</p>
+            </article>
+            <article class="card hover-target fade-up">
+                <div class="card-index">04 / MULTI-ASSET</div>
+                <h3>Мультиактивная среда</h3>
+                <p>Валюты, фондовые индексы, акции, нефть и золото — весь спектр институциональных активов доступен в едином профессиональном терминале.</p>
+            </article>
+            <article class="card hover-target fade-up" style="transition-delay: 0.1s;">
+                <div class="card-index">05 / PLATFORMS</div>
+                <h3>Профессиональные терминалы</h3>
+                <p>Полная интеграция с MetaTrader 4, MetaTrader 5 и WebTrader для обеспечения бесперебойной реализации ваших торговых алгоритмов.</p>
+            </article>
+            <article class="card hover-target fade-up" style="transition-delay: 0.2s;">
+                <div class="card-index">06 / RED BULL RACING</div>
+                <h3>Инженерия Формулы-1</h3>
+                <p>Официальное партнерство с командой Oracle Red Bull Racing — это прямое отражение наших ценностей: математическая точность, скорость и передовые технологии.</p>
+            </article>
+        </div>
+
+        <div class="video-wrap fade-up">
+            <iframe 
+                src="https://stream.vidhosting.in/videos/756f16d5.mp4" 
+                title="AvaTrade Oracle Red Bull Racing"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                allowfullscreen>
+            </iframe>
+        </div>
+    </section>
+
+    <section id="tradexplanation">
+        <div class="block-header fade-up">
+            <div>
+                <div class="section-number">Block 02 / TradeXplanation</div>
+                <div class="block-tag">Market Architecture</div>
+                <h2 class="section-title">Не брокер решает за вас. Система решает, как вы действуете.</h2>
+            </div>
+            <p class="section-lead">
+                TradeXplanation превращает хаос рыночных графиков в последовательный торговый процесс: расчет ликвидности, риск-менеджмент, жесткий сайзинг и холодное исполнение позиции.
+            </p>
+        </div>
+
+        <div class="experience fade-up">
+            <div>
+                <div class="experience-number">9+</div>
+                <div class="experience-label">лет системной работы</div>
+            </div>
+            <div class="experience-copy">
+                <strong>Архитектура TradeXplanation.</strong><br>
+                Вместо попыток угадать каждый импульс рынка система работает
+                с вероятностными сценариями, ликвидностью, структурой движения
+                и динамическим управлением риском.
+            </div>
+        </div>
+
+        <div class="cards cards-2 architecture">
+            <article class="card hover-target fade-up">
+                <div class="card-index">01 / MARKET MATHEMATICS</div>
+                <h3>Математика рынка</h3>
+                <p>Ликвидность, Order Flow, Imbalance и дисбаланс маркетмейкеров — мы полностью отказываемся от индикаторов ритейл-толпы в пользу чистых данных.</p>
+                <div class="bullet-line">Сценарное мышление вместо эмоциональных входов.</div>
+                <div class="bullet-line">Контекст всегда первичен.</div>
+            </article>
+            <article class="card hover-target fade-up" style="transition-delay: 0.1s;">
+                <div class="card-index">02 / CAPITAL ENGINEERING</div>
+                <h3>Инженерная защита капитала</h3>
+                <p>Жесткий position sizing и математически выверенная экспозиция. Размер позиции становится частью защитной модели, а не случайностью.</p>
+                <div class="bullet-line">Сохранение капитала — наша главная метрика.</div>
+                <div class="bullet-line">Логика выхода определяется строго до входа.</div>
+            </article>
+        </div>
+    </section>
+
+    <section id="client">
+        <div class="block-header fade-up">
+            <div>
+                <div class="section-number">Block 03 / Client</div>
+                <div class="block-tag">Client + Experience + Infrastructure</div>
+                <h2 class="section-title">Третья часть системы — сам клиент.</h2>
+            </div>
+            <p class="section-lead">
+                Даже самая премиальная инфраструктура не компенсирует отсутствие вашей дисциплины. Наша архитектура объединяет опыт аналитиков и технологические мощности AvaTrade в единый бескомпромиссный процесс.
+            </p>
+        </div>
+
+        <div class="client">
+            <div class="client-profile hover-target fade-up">
+                <div class="client-label">Client Profile</div>
+                <h3>Осознанный подход к рынку.</h3>
+                <p>Наши клиенты приходят не за обещаниями "быстрых денег", а за институциональной архитектурой исполнения: контролируемый риск, математические сценарии и брокерская среда высшего уровня.</p>
+                <div class="bullet-line">Отказ от импульсивных сделок.</div>
+                <div class="bullet-line">Готовность беспрекословно соблюдать торговый алгоритм.</div>
+                <div class="bullet-line">Понимание риска как управляемого инструмента.</div>
+            </div>
+
+            <div class="client-process hover-target fade-up" style="transition-delay: 0.1s;">
+                <div class="client-label">Integration Flow</div>
+                <div class="process-row">
+                    <div class="process-number">01</div>
+                    <div>
+                        <h3>Диагностика</h3>
+                        <p>Бескомпромиссный разбор вашей предыдущей торговой модели, демонтаж ошибок и неработающих стратегий.</p>
+                    </div>
+                </div>
+                <div class="process-row">
+                    <div class="process-number">02</div>
+                    <div>
+                        <h3>TradeXplanation</h3>
+                        <p>Интеграция в рабочую архитектуру: чтение ликвидности, управление сайзингом и сценарный риск-менеджмент.</p>
+                    </div>
+                </div>
+                <div class="process-row">
+                    <div class="process-number">03</div>
+                    <div>
+                        <h3>AvaTrade</h3>
+                        <p>Подключение к глобальной инфраструктуре брокера для обеспечения надежности и скорости.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <div class="section-number fade-up">04 / Integration Criteria</div>
+        <h2 class="section-title fade-up">Условия интеграции.</h2>
+        <p class="section-lead fade-up">
+            Эта инфраструктура рассчитана на тех, кто воспринимает трейдинг
+            как системный бизнес-процесс, требующий холодного расчета.
+        </p>
+        <div class="filter">
+            <div class="filter-item fade-up">
+                <div class="filter-index">01</div>
+                <div class="filter-title">Капитал от $300</div>
+                <div class="filter-description">Это математический минимум для применения адекватного риск-менеджмента. Суммы ниже не позволяют диверсифицировать риски и удерживать просадки.</div>
+            </div>
+            <div class="filter-item fade-up" style="transition-delay: 0.1s;">
+                <div class="filter-index">02</div>
+                <div class="filter-title">Эксклюзивные +20%</div>
+                <div class="filter-description">При регистрации через нашу систему вы получаете маржинальный бонус к стартовому депозиту для усиления ликвидности позиций.</div>
+            </div>
+            <div class="filter-item fade-up" style="transition-delay: 0.2s;">
+                <div class="filter-index">03</div>
+                <div class="filter-title">Жесткая дисциплина</div>
+                <div class="filter-description">Полный отказ от иллюзий легкого заработка. Абсолютное подчинение алгоритму и правилам сохранения капитала.</div>
+            </div>
+        </div>
+    </section>
+
+    <section class="fade-up">
+        <div class="closing hover-target">
+            <div class="status" id="status">СТАТУС ИНТЕГРАЦИИ: ОЖИДАНИЕ ЗАЯВКИ</div>
+            <div id="countdown">48:00:00</div>
+            <h2>Переход к профессиональной архитектуре.</h2>
+            <p class="closing-copy">
+                Регистрация по партнерской ссылке фиксирует за вами условия интеграции и открывает доступ к передовым мощностям AvaTrade.
+            </p>
+            <a class="cta-button" id="cta" href="https://ru.avatrade.com/?tag=62581" target="_blank" rel="noopener noreferrer">
+                ИНИЦИАЛИЗИРОВАТЬ ЗАЯВКУ И ПОЛУЧИТЬ +20%
+            </a>
+            <p class="cta-note">Доступ открыт только для целевых участников. Зафиксируйте условия в окне таймера.</p>
+        </div>
+    </section>
+
+    <footer>
+        <div class="risk">
+            Архитектура управляемого торгового процесса.<br>
+            Торговля на финансовых рынках сопряжена с рисками. Соблюдайте риск-менеджмент.
+        </div>
+    </footer>
+</div>
+
+<script>
+// Таймер
+const TIMER_KEY = "tradexplanation_48h_deadline";
+const TIMER_DURATION = 48 * 60 * 60 * 1000;
+let deadline = localStorage.getItem(TIMER_KEY);
+
+if (!deadline) {
+    deadline = Date.now() + TIMER_DURATION;
+    localStorage.setItem(TIMER_KEY, deadline);
+}
+
+deadline = Number(deadline);
+const countdown = document.getElementById("countdown");
+const status = document.getElementById("status");
+const cta = document.getElementById("cta");
+
+function pad(value) { return String(value).padStart(2, "0"); }
+
+function updateTimer() {
+    const remaining = deadline - Date.now();
+    if (remaining <= 0) {
+        clearInterval(timer);
+        countdown.textContent = "ДОСТУП ЗАКРЫТ";
+        status.textContent = "СТАТУС ИНТЕГРАЦИИ: ДОСТУП ЗАКРЫТ";
+        cta.removeAttribute("href");
+        cta.setAttribute("aria-disabled", "true");
+        cta.style.opacity = ".42";
+        cta.style.pointerEvents = "none";
+        return;
+    }
+    const hours = Math.floor(remaining / 3600000);
+    const minutes = Math.floor((remaining % 3600000) / 60000);
+    const seconds = Math.floor((remaining % 60000) / 1000);
+    countdown.textContent = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+}
+
+updateTimer();
+const timer = setInterval(updateTimer, 1000);
+
+// Анимация при скролле (Жесткая привязка)
+document.addEventListener("DOMContentLoaded", function() {
+    const observerOptions = {
+        root: null,
+        rootMargin: '0px 0px -50px 0px',
+        threshold: 0.1
+    };
+    
+    const observer = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('is-revealed');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, observerOptions);
+    
+    document.querySelectorAll('.fade-up').forEach(el => {
+        observer.observe(el);
+    });
+});
+</script>
+
+</body>
+</html>
