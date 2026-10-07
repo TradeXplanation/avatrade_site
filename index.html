@@ -12,12 +12,12 @@
 
 <style>
 :root {
-    --bg: #030510;
-    --panel: rgba(10, 15, 28, 0.45);
-    --panel2: rgba(15, 22, 40, 0.75);
+    --bg: #030510; 
+    --panel: rgba(10, 15, 28, 0.45); 
+    --panel2: rgba(15, 22, 40, 0.75); 
     --line: rgba(255, 255, 255, 0.08);
     --line2: rgba(255, 255, 255, 0.15);
-    --card-top-light: rgba(33, 202, 238, 0.4);
+    --card-top-light: rgba(33, 202, 238, 0.4); 
     --accent: #00a9d6;
     --accent2: #21caee;
     --text: #c5d0d9;
@@ -282,7 +282,7 @@ h3 {
     display:grid;
     grid-template-columns:repeat(3,1fr);
     gap:10px;
-    margin:-35px 0 110px;
+    margin:-35px 0 0;
     position:relative;
     z-index:5;
 }
@@ -304,6 +304,28 @@ h3 {
     font-size:15px;
     font-weight:700;
     color: #ffffff;
+}
+
+/* ЕДИНСТВЕННОЕ ИЗМЕНЕНИЕ:
+   большой пробел между кнопками и видео */
+.top-video{
+    position:relative;
+    width:100%;
+    padding-bottom:56.25%;
+    height:0;
+    overflow:hidden;
+    margin-top:90px;
+    margin-bottom:110px;
+    border-radius:12px;
+}
+
+.top-video iframe{
+    position:absolute;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    border:0;
 }
 
 section{margin-bottom:110px}
@@ -642,7 +664,13 @@ footer{
     .hero{min-height:690px; margin-bottom:76px;}
     .hero-content{padding-bottom:60px}
     .ava-logo{width:170px;margin-bottom:42px}
-    .block-nav{grid-template-columns:1fr; margin:-30px 0 76px;}
+    .block-nav{grid-template-columns:1fr; margin:-30px 0 0;}
+    
+    .top-video{
+        margin-top:60px;
+        margin-bottom:76px;
+    }
+
     section{margin-bottom:76px}
     .block-header, .experience{gap:25px;}
     .stats, .cards-3, .cards-2{grid-template-columns:1fr;}
@@ -667,6 +695,7 @@ footer{
 
 <div class="page">
 
+    <!-- HERO -->
     <header class="hero">
         <img
             class="hero-bg"
@@ -689,6 +718,7 @@ footer{
         </div>
     </header>
 
+    <!-- КНОПКИ -->
     <nav class="block-nav fade-up" aria-label="Навигация по архитектуре">
         <a href="#avatrade">
             <span>01 / INFRASTRUCTURE</span>
@@ -705,6 +735,15 @@ footer{
             <strong>Клиент + система</strong>
         </a>
     </nav>
+
+    <!-- ВИДЕО СРАЗУ ПОСЛЕ КНОПОК С БОЛЬШИМ ОТСТУПОМ -->
+    <div class="top-video">
+        <iframe
+            src="https://drive.google.com/file/d/1VYh6YVF4o-7m7BKXhC8AkmpWjeoOmQ1e/preview"
+            allow="autoplay"
+            allowfullscreen>
+        </iframe>
+    </div>
 
     <section id="avatrade">
         <div class="block-header fade-up">
@@ -777,15 +816,6 @@ footer{
                 <h3>Инженерия Формулы-1</h3>
                 <p>Официальное партнерство с командой Oracle Red Bull Racing — это прямое отражение наших ценностей: математическая точность, скорость и передовые технологии.</p>
             </article>
-        </div>
-
-        <div style="position:relative;width:100%;padding-bottom:56.25%;height:0;overflow:hidden;margin-bottom:110px;">
-            <iframe
-                src="https://drive.google.com/file/d/1VYh6YVF4o-7m7BKXhC8AkmpWjeoOmQ1e/preview"
-                style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;"
-                allow="autoplay"
-                allowfullscreen>
-            </iframe>
         </div>
 
     </section>
