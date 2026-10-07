@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -7,36 +6,25 @@
 <meta name="description" content="TradeXplanation × AvaTrade — системная торговая архитектура и профессиональная инфраструктура.">
 <title>TradeXplanation × AvaTrade — Private Trading Architecture</title>
 
-<!-- Подключение премиального шрифта -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
 <style>
 :root {
-    /* Глубокий темно-синий */
-    --bg: #030510; 
-    
-    /* Стеклянные панели (Glassmorphism) */
-    --panel: rgba(10, 15, 28, 0.45); 
-    --panel2: rgba(15, 22, 40, 0.75); 
-    
-    /* Линии контраста */
+    --bg: #030510;
+    --panel: rgba(10, 15, 28, 0.45);
+    --panel2: rgba(15, 22, 40, 0.75);
     --line: rgba(255, 255, 255, 0.08);
     --line2: rgba(255, 255, 255, 0.15);
-    --card-top-light: rgba(33, 202, 238, 0.4); 
-    
-    /* Акценты */
+    --card-top-light: rgba(33, 202, 238, 0.4);
     --accent: #00a9d6;
     --accent2: #21caee;
     --text: #c5d0d9;
     --muted: #8c9eac;
     --muted2: #6f7f8d;
-    
-    /* Свечение */
     --shadow: 0 28px 80px rgba(0, 0, 0, 0.9);
     --glow: 0 15px 45px rgba(0, 169, 214, 0.35), 0 0 25px rgba(0, 169, 214, 0.5);
-    
     --radius: 16px;
 }
 
@@ -672,7 +660,6 @@ footer{
 
 <body>
 
-<!-- АМБИЕНТНЫЙ ФОН -->
 <div class="ambient-canvas">
     <div class="ambient-glow-1"></div>
     <div class="ambient-glow-2"></div>
@@ -680,7 +667,6 @@ footer{
 
 <div class="page">
 
-    <!-- HERO -->
     <header class="hero">
         <img
             class="hero-bg"
@@ -793,15 +779,14 @@ footer{
             </article>
         </div>
 
-        
-        <div style="position:relative;width:100%;padding-bottom:56.25%;height:0;overflow:hidden;">
-  <iframe
-    src="https://drive.google.com/file/d/1VYh6YVF4o-7m7BKXhC8AkmpWjeoOmQ1e/preview"
-    style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;"
-    allow="autoplay"
-    allowfullscreen>
-  </iframe>
-</div>
+        <div style="position:relative;width:100%;padding-bottom:56.25%;height:0;overflow:hidden;margin-bottom:110px;">
+            <iframe
+                src="https://drive.google.com/file/d/1VYh6YVF4o-7m7BKXhC8AkmpWjeoOmQ1e/preview"
+                style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;"
+                allow="autoplay"
+                allowfullscreen>
+            </iframe>
+        </div>
 
     </section>
 
@@ -985,12 +970,6 @@ footer{
 </div>
 
 <script>
-/* =========================================
-   ТАЙМЕР
-   ИСПРАВЛЕНО:
-   timer объявляется ДО первого вызова updateTimer()
-========================================= */
-
 const TIMER_KEY = "tradexplanation_48h_deadline";
 const TIMER_DURATION = 48 * 60 * 60 * 1000;
 
@@ -1039,16 +1018,9 @@ function updateTimer() {
         `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
 }
 
-/* Первый расчет */
 updateTimer();
 
-/* После объявления timer запускаем интервал */
 timer = setInterval(updateTimer, 1000);
-
-
-/* =========================================
-   АНИМАЦИЯ ПРИ СКРОЛЛЕ
-========================================= */
 
 document.addEventListener("DOMContentLoaded", function() {
 
@@ -1085,4 +1057,3 @@ document.addEventListener("DOMContentLoaded", function() {
 
 </body>
 </html>
-```
